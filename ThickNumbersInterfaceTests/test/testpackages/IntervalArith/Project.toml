@@ -1,0 +1,7 @@
+name = "IntervalArith"
+uuid = "e216f561-84ec-405a-979a-d9249f26cbea"
+authors = ["Tim Holy <tim.holy@gmail.com>"]
+version = "0.1.0"
+
+[deps]
+ThickNumbers = "b57aa878-5b76-4266-befc-f8e007760995"

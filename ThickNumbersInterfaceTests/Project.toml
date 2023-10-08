@@ -1,0 +1,8 @@
+name = "ThickNumbersInterfaceTests"
+uuid = "eac5e748-3bc6-45e0-b912-49cd640e615c"
+authors = ["Tim Holy <tim.holy@gmail.com>"]
+version = "0.1.0"
+
+[deps]
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+ThickNumbers = "b57aa878-5b76-4266-befc-f8e007760995"
