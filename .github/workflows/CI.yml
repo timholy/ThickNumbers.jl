@@ -35,7 +35,7 @@ jobs:
       - uses: julia-actions/julia-buildpkg@v1
       - uses: julia-actions/julia-runtest@v1
       - name: InterfaceTests
-        run: julia --project=ThickNumbersInterfaceTests -e 'using Pkg; Pkg.develop(path="..")); Pkg.test(coverage=true)'
+        run: julia --project=ThickNumbersInterfaceTests -e 'using Pkg; Pkg.develop(path=pwd()); Pkg.test(coverage=true)'
       - uses: julia-actions/julia-processcoverage@v1
       - uses: codecov/codecov-action@v3
         with:
