@@ -25,4 +25,5 @@ makedocs(;
 deploydocs(;
     repo="github.com/timholy/ThickNumbers.jl",
     devbranch="main",
+    push_preview=true,
 )
