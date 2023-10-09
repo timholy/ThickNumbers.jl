@@ -33,6 +33,19 @@ isinf_tn
 isnan_tn
 ```
 
+## Comparison operators
+
+```@docs
+iseq_tn
+isequal_tn
+isapprox_tn
+isless_tn
+≺
+≻
+⪯
+⪰
+```
+
 ## Set operations
 
 See also [IntervalSets](https://github.com/JuliaMath/IntervalSets.jl) for a more flexible way of supporting intervals as sets.

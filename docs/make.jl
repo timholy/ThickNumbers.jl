@@ -11,11 +11,13 @@ makedocs(;
     format=Documenter.HTML(;
         prettyurls=get(ENV, "CI", "false") == "true",
         canonical="https://timholy.github.io/ThickNumbers.jl",
+        repolink="https://github.com/timholy/ThickNumbers.jl",
         edit_link="main",
         assets=String[],
     ),
     pages=[
         "Home" => "index.md",
+        "developers.md",
         "required.md",
         "optional.md",
         "user_api.md",
