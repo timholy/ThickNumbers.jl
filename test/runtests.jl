@@ -17,6 +17,16 @@ using IntervalArith
     @test !isequal_tn(Interval(1, 2), Interval(1, 3))
     @test Interval(1, 2) ≐ Interval(1, 2)
     @test_throws FPTNException Interval(1, 2) == Interval(1, 2)
+    exc = try
+        Interval(1, 2) == Interval(1, 3)
+        nothing
+    catch e
+        e
+    end
+    str = sprint(Base.showerror, exc)
+    @test occursin("== is deliberately not implemented", str)
+    @test occursin("≐", str)
+    @test occursin("doteq", str)
     @test isapprox_tn(Interval(1, 2), Interval(1, nextfloat(2.0)))
     @test Interval(1, 2) ⩪ Interval(1, nextfloat(2.0))
     @test_throws FPTNException Interval(1, 2) ≈ Interval(1, nextfloat(2.0))
