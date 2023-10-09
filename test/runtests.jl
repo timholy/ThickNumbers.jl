@@ -13,23 +13,41 @@ using IntervalArith
 @testset "ThickNumbers generics" begin
     # Test all the operations defined in ThickNumbers
     @test isequal_tn(Interval(1, 2), Interval(1, 2))
+    @test_throws FPTNException isequal(Interval(1, 2), Interval(1, 2))
     @test !isequal_tn(Interval(1, 2), Interval(1, 3))
-    @test Interval(1, 2) ⩦ Interval(1, 2)
+    @test Interval(1, 2) ≐ Interval(1, 2)
+    @test_throws FPTNException Interval(1, 2) == Interval(1, 2)
+    exc = try
+        Interval(1, 2) == Interval(1, 3)
+        nothing
+    catch e
+        e
+    end
+    str = sprint(Base.showerror, exc)
+    @test occursin("== is deliberately not implemented", str)
+    @test occursin("≐", str)
+    @test occursin("doteq", str)
     @test isapprox_tn(Interval(1, 2), Interval(1, nextfloat(2.0)))
     @test Interval(1, 2) ⩪ Interval(1, nextfloat(2.0))
+    @test_throws FPTNException Interval(1, 2) ≈ Interval(1, nextfloat(2.0))
     @test !isapprox_tn(Interval(1, 2), Interval(1, 2.1))
     @test isless_tn(Interval(1, 2), Interval(nextfloat(2.0), 3))
+    @test_throws FPTNException isless(Interval(1, 2), Interval(nextfloat(2.0), 3))
     @test Interval(1, 2) ≺ Interval(nextfloat(2.0), 3)
+    @test_throws FPTNException Interval(1, 2) < Interval(nextfloat(2.0), 3)
     @test Interval(nextfloat(2.0), 3) ≻ Interval(1, 2)
+    @test_throws FPTNException Interval(nextfloat(2.0), 3) > Interval(1, 2)
     @test !isless_tn(Interval(1, 2), Interval(1, 2))
     @test !isless_tn(Interval(1, 2), Interval(2, 3))
     @test issubset_tn(Interval(1, 2), Interval(1, 2))
     @test Interval(1, 2) ⫃ Interval(1, 2)
+    @test_throws FPTNException issubset(Interval(1, 2), Interval(1, 2))
     @test issubset_tn(Interval(1, 2), Interval(0, 3))
     @test !issubset_tn(Interval(1, 2), Interval(0, 1))
     @test is_strict_subset_tn(Interval(1, 2), Interval(0, 3))
     @test !is_strict_subset_tn(Interval(1, 2), Interval(1, 2))
     @test issupset_tn(Interval(1, 2), Interval(1, 2))
+    @test_throws FPTNException Interval(1, 2) ⊇ Interval(1, 2)
     @test issupset_tn(Interval(0, 3), Interval(1, 2))
     @test !issupset_tn(Interval(0, 1), Interval(1, 2))
     @test is_strict_supset_tn(Interval(0, 3), Interval(1, 2))
@@ -48,14 +66,17 @@ using IntervalArith
     @test emptyset(Interval{Float32}) === Interval(Inf32, -Inf32)
     @test emptyset(Interval{Float64}) === Interval(Inf, -Inf)
     @test isfinite_tn(Interval(1, 2))
+    @test_throws FPTNException isfinite(Interval(1, 2))
     @test !isfinite_tn(Interval(1, Inf))
     @test !isfinite_tn(Interval(-Inf, 2))
     @test !isfinite_tn(Interval(-Inf, Inf))
     @test isinf_tn(Interval(1, Inf))
+    @test_throws FPTNException isinf(Interval(1, Inf))
     @test isinf_tn(Interval(-Inf, 2))
     @test isinf_tn(Interval(-Inf, Inf))
     @test !isinf_tn(Interval(1, 2))
     @test isnan_tn(Interval(NaN, 2))
+    @test_throws FPTNException isnan(Interval(NaN, 2))
     @test isnan_tn(Interval(1, NaN))
     @test isnan_tn(Interval(NaN, NaN))
     @test !isnan_tn(Interval(1, 2))
@@ -63,11 +84,11 @@ using IntervalArith
 
     x = Interval(1.0, 3.0)
     @test valuetype(x) === valuetype(typeof(x)) === Float64
-    @test typemin(x) ⩦ Interval(-Inf, -Inf)
-    @test typemax(x) ⩦ Interval(Inf, Inf)
+    @test typemin(x) ≐ Interval(-Inf, -Inf)
+    @test typemax(x) ≐ Interval(Inf, Inf)
 
-    @test x ⩦ +x
-    @test -x ⩦ Interval(-3.0, -1.0)
+    @test x ≐ +x
+    @test -x ≐ Interval(-3.0, -1.0)
     y = Interval(0x00, 0xff)
     @test_throws OverflowError -y
 end
