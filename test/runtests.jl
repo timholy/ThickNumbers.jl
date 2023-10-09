@@ -70,6 +70,7 @@ using IntervalArith
     @test intersect(Interval(1, 5), Interval(2, 4), Interval(3, 10)) === Interval(3, 4)
     @test emptyset(Interval{Float32}) === Interval(Inf32, -Inf32)
     @test emptyset(Interval{Float64}) === Interval(Inf, -Inf)
+    @test emptyset(Interval(1.0, 2.0)) === Interval(Inf, -Inf)
     @test isfinite_tn(Interval(1, 2))
     @test_throws FPTNException isfinite(Interval(1, 2))
     @test !isfinite_tn(Interval(1, Inf))
@@ -101,6 +102,20 @@ using IntervalArith
     @test -x ≐ Interval(-3.0, -1.0)
     y = Interval(0x00, 0xff)
     @test_throws OverflowError -y
+
+    # Comparisons between zero-width ThickNumbers and Reals
+    @test Interval(1, 1) ≐ 1
+    @test 1 ≐ Interval(1, 1)
+    @test !(Interval(1, 1+eps()) ≐ 1)
+    @test isequal_tn(Interval(1, 1), 1)
+    @test isequal_tn(1, Interval(1, 1))
+    @test !isequal_tn(1, Interval(1, 1+eps()))
+    @test Interval(1, 1) ⩪ 1
+    @test 1 ⩪ Interval(1, 1)
+    @test 1 ⩪ Interval(1, 1+eps())
+
+    # Arrays of ThickNumbers
+    @test [Interval(1, 2), Interval(0, 1+eps())] ⩪ [Interval(1, 2*(1+eps())), Interval(0, 1)]
 end
 
 filter!(LOAD_PATH) do path
