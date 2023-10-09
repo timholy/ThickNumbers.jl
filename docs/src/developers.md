@@ -1,5 +1,10 @@
 # Creating a new ThickNumber subtype
 
+!!! tip
+    For a concrete example, see the `ThickNumbersInterfaceTests/test/testpackages/IntervalArith` "package"
+    in the main source repository of `ThickNumbers.jl`. You can get a hint of the behaviors this endows by looking
+    at `ThickNumbers/test/runtests.jl`, which uses the `Interval` type defined by `IntervalArith`.
+
 Create your type by subtyping `ThickNumber{T}`:
 
 ```julia

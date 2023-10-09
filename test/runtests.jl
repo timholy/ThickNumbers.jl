@@ -39,6 +39,8 @@ using IntervalArith
     @test_throws FPTNException Interval(nextfloat(2.0), 3) > Interval(1, 2)
     @test !isless_tn(Interval(1, 2), Interval(1, 2))
     @test !isless_tn(Interval(1, 2), Interval(2, 3))
+    @test Interval(1, 2) ⪯ Interval(2, 3)
+    @test Interval(2, 3) ⪰ Interval(1, 2)
     @test issubset_tn(Interval(1, 2), Interval(1, 2))
     @test Interval(1, 2) ⫃ Interval(1, 2)
     @test_throws FPTNException issubset(Interval(1, 2), Interval(1, 2))
@@ -60,9 +62,12 @@ using IntervalArith
     @test hull(Interval(1, 2), Interval(3, 4)) === Interval(1, 4)
     @test hull(Interval(1, 2), Interval(2, 3)) === Interval(1, 3)
     @test hull(Interval(1, 2), Interval(1, 2)) === Interval(1, 2)
+    @test hull(Interval(1, 2), Interval(3.0, 4.0), Interval(5, 6)) === Interval(1.0, 6.0)
     # intersect
     @test intersect(Interval(1, 2), Interval(3, 4)) === emptyset(Interval{Int})
     @test intersect(Interval(1, 2), Interval(2, 3)) === Interval(2, 2)
+    @test intersect(Interval(1.0, 3.0), Interval(2, 4)) === Interval(2.0, 3.0)
+    @test intersect(Interval(1, 5), Interval(2, 4), Interval(3, 10)) === Interval(3, 4)
     @test emptyset(Interval{Float32}) === Interval(Inf32, -Inf32)
     @test emptyset(Interval{Float64}) === Interval(Inf, -Inf)
     @test isfinite_tn(Interval(1, 2))
@@ -82,10 +87,15 @@ using IntervalArith
     @test !isnan_tn(Interval(1, 2))
     @test !isnan_tn(Interval(1, Inf))
 
-    x = Interval(1.0, 3.0)
+    x, y = Interval(1.0, 3.0), Interval(-1.0, 3.0)
     @test valuetype(x) === valuetype(typeof(x)) === Float64
     @test typemin(x) ≐ Interval(-Inf, -Inf)
     @test typemax(x) ≐ Interval(Inf, Inf)
+    @test mig(x) === 1.0
+    @test mig(y) === 0.0
+    @test mag(x) === 3.0
+    @test mag(y) === 3.0
+    @test mag(Interval(-5, 1)) === 5
 
     @test x ≐ +x
     @test -x ≐ Interval(-3.0, -1.0)
