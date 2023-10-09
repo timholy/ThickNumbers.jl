@@ -17,7 +17,7 @@ export lohi, midrad, loval, hival, mid, wid, rad, mag, mig
 export emptyset, hull, issubset_tn, ⫃, is_strict_subset_tn, ⪽, issupset_tn, ⫄, is_strict_supset_tn, ⪾
 
 # Operators
-export isequal_tn, ⩦, isapprox_tn, ⩪, isless_tn, ≺, ≻
+export isequal_tn, iseq_tn, ⩦, isapprox_tn, ⩪, isless_tn, ≺, ≻, ⪯, ⪰
 
 # Unary
 export isfinite_tn, isinf_tn, isnan_tn
@@ -29,7 +29,14 @@ abstract type ThickNumber{T<:Number} <: Number end
 """
     valuetype(::Type{<:ThickNumber})
 
-Return the `T` in `ThickNumber{T}`.
+Return the type of the numbers in the span, i.e., the `T` in `ThickNumber{T}`.
+
+# Examples
+
+```julia
+julia> valuetype(Interval{Float64})
+Float64
+```
 """
 valuetype(::Type{TN}) where TN<:ThickNumber{T} where T = T
 valuetype(x::ThickNumber) = valuetype(typeof(x))
@@ -354,11 +361,28 @@ hull(a::TN, b::TN) where TN<:ThickNumber =
 
 ## Operators
 
-# The valuetype should not have to be the same, but there doesn't
-# seem to be a way of expressing that.
-isequal_tn(a::ThickNumber, b::ThickNumber) = (isempty(a) & isempty(b)) | ((loval(a) == loval(b)) & (hival(a) == hival(b)))
-const ⩦ = isequal_tn
+"""
+    isequal_tn(a::ThickNumber, b::ThickNumber)
 
+Returns `true` if `a` and `b` are both empty or both `loval` and `hival` are equal in the sense of `isequal`. It is `false` otherwise.
+"""
+isequal_tn(a::ThickNumber, b::ThickNumber) = (isempty(a) & isempty(b)) | (isequal(loval(a), loval(b)) & isequal(hival(a), hival(b)))
+
+"""
+    iseq_tn(a::ThickNumber, b::ThickNumber)
+    a ⩦ b
+
+Returns `true` if `a` and `b` are both empty or both `loval` and `hival` are equal in the sense of `==`. It is `false` otherwise.
+"""
+iseq_tn(a::ThickNumber, b::ThickNumber) = (isempty(a) & isempty(b)) | ((loval(a) == loval(b)) & (hival(a) == hival(b)))
+const ⩦ = iseq_tn
+
+"""
+    isapprox_tn(a::ThickNumber, b::ThickNumber; atol=0, rtol::Real=atol>0 ? 0 : √eps)
+    a ⩪ b
+
+Returns `true` if `a` and `b` are both empty or both `loval` and `hival` are approximately equal (≈). It is `false` otherwise.
+"""
 function isapprox_tn(x::ThickNumber, y::ThickNumber; atol::Real=0, rtol::Real=Base.rtoldefault(x,y,atol), nans::Bool=false)
     isempty(x) && isempty(y) && return true
     isequal_tn(x, y) || (isfinite_tn(x) && isfinite_tn(y) && max(abs(hival(x)-hival(y)), abs(loval(x)-loval(y))) <= max(atol, rtol*max(mag(x), mag(y)))) || (nans && isnan(x) && isnan(y))
@@ -370,9 +394,41 @@ end
 Base.rtoldefault(::Type{TN}) where TN<:ThickNumber{T} where T = Base.rtoldefault(T)
 const ⩪ = isapprox_tn
 
+"""
+    isless_tn(a::ThickNumber, b::ThickNumber)
+
+Returns `true` if `isless(hival(a), loval(b))`, `false` otherwise. See also [`≺`](@ref).
+"""
 isless_tn(a::ThickNumber, b::ThickNumber) = isless(hival(a), loval(b))
+
+"""
+    a ≺ b
+
+Returns `true` if `hival(a) < loval(b)`, `false` otherwise. Use `\\prec`-TAB to type.
+"""
 ≺(a::ThickNumber, b::ThickNumber) = hival(a) < loval(b)
+
+"""
+    a ≻ b
+
+Returns `true` if `loval(a) > hival(b)`, `false` otherwise. Use `\\succ`-TAB to type.
+"""
 ≻(a::ThickNumber, b::ThickNumber) = hival(a) > loval(b)
+
+"""
+    a ≼ b
+
+Returns `true` if `hival(a) ≤ loval(b)`, `false` otherwise. Use `\\preceq`-TAB to type.
+"""
+⪯(a::ThickNumber, b::ThickNumber) = hival(a) < loval(b)
+
+"""
+    a ≽ b
+
+Returns `true` if `loval(a) ≥ hival(b)`, `false` otherwise. Use `\\succeq`-TAB to type.
+"""
+⪰(a::ThickNumber, b::ThickNumber) = hival(a) > loval(b)
+
 
 ## Unary + and -
 Base.:(+)(a::ThickNumber) = a
