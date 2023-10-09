@@ -448,7 +448,7 @@ Base.:(>)(::ThickNumber, ::ThickNumber) = throw(FPTNException(>, "≻ (\\succ-TA
 
 Returns `true` if `hival(a) ≤ loval(b)`, `false` otherwise. Use `\\preceq`-TAB to type.
 """
-⪯(a::ThickNumber, b::ThickNumber) = hival(a) < loval(b)
+⪯(a::ThickNumber, b::ThickNumber) = hival(a) <= loval(b)
 Base.:(<=)(::ThickNumber, ::ThickNumber) = throw(FPTNException(<=, "⪯ (\\preceq-TAB)"))
 
 """
@@ -456,7 +456,7 @@ Base.:(<=)(::ThickNumber, ::ThickNumber) = throw(FPTNException(<=, "⪯ (\\prece
 
 Returns `true` if `loval(a) ≥ hival(b)`, `false` otherwise. Use `\\succeq`-TAB to type.
 """
-⪰(a::ThickNumber, b::ThickNumber) = hival(a) > loval(b)
+⪰(a::ThickNumber, b::ThickNumber) = hival(a) >= loval(b)
 Base.:(>=)(::ThickNumber, ::ThickNumber) = throw(FPTNException(>=, "⪰ (\\succeq-TAB)"))
 
 
