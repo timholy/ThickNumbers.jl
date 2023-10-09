@@ -15,6 +15,7 @@ using IntervalArith
     ThickNumbersInterfaceTests.test_required(Interval, [Float32, Float64])
     ThickNumbersInterfaceTests.test_optional(Interval{Float64})
     ThickNumbersInterfaceTests.test_optional(Interval, [Float32, Float64])
+    ThickNumbersInterfaceTests.test_FPTNviolations(Interval(1.0, 2.0))
 end
 
 filter!(LOAD_PATH) do path

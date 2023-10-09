@@ -24,9 +24,9 @@ function test_reserved(@nospecialize(T=Float64))
     @test_throws MethodError isnan_tn(T(1))
 end
 
-function test_required(@nospecialize(TN), @nospecialize(Ts=nothing))
+function test_required(f::Function, @nospecialize(TN), @nospecialize(Ts=nothing))
     lo, hi = 1/3, nextfloat(2/3)
-    x = lohi(TN, lo, hi)
+    x = f(TN, lo, hi)
     @test typeof(x) <: TN
     @test lo ∈ x
     @test hi ∈ x
@@ -34,7 +34,7 @@ function test_required(@nospecialize(TN), @nospecialize(Ts=nothing))
     @test hi ≈ hival(x)
     if Ts !== nothing
         for T in Ts
-            for (x, l, h) in ((lohi(TN{T}, lo, hi), lo, hi), (lohi(TN{T}, 1, 2.0), 1.0, 2.0))
+            for (x, l, h) in ((f(TN{T}, lo, hi), lo, hi), (f(TN{T}, 1, 2.0), 1.0, 2.0))
                 @test typeof(x) <: TN{T}
                 @test valuetype(x) === valuetype(typeof(x)) === T
                 @test T(l) ∈ x
@@ -45,10 +45,11 @@ function test_required(@nospecialize(TN), @nospecialize(Ts=nothing))
         end
     end
 end
+test_required(@nospecialize(TN::Type), @nospecialize(Ts=nothing)) = test_required(lohi, TN, Ts)
 
-function test_optional(@nospecialize(TN), @nospecialize(Ts=nothing))
+function test_optional(f::Function, @nospecialize(TN::Type), @nospecialize(Ts=nothing))
     m, r = 1/2, 1/6
-    x = midrad(TN, m, r)
+    x = f(TN, m, r)
     @test typeof(x) <: TN
     @test m ∈ x && m ≈ mid(x)
     @test r <= rad(x) && r ≈ rad(x)
@@ -58,13 +59,31 @@ function test_optional(@nospecialize(TN), @nospecialize(Ts=nothing))
     end
     if Ts !== nothing
         for T in Ts
-            x = midrad(TN{T}, m, r)
+            x = f(TN{T}, m, r)
             @test typeof(x) <: TN{T}
             @test valuetype(x) === valuetype(typeof(x)) === T
             @test T(m) ∈ x && T(m) ≈ mid(x)
             @test T(r) <= rad(x) && T(r) ≈ rad(x)
         end
     end
+end
+test_optional(@nospecialize(TN::Type), @nospecialize(Ts=nothing)) = test_optional(midrad, TN, Ts)
+
+function test_FPTNviolations(X::ThickNumber)
+    @test_throws FPTNException X == X
+    @test_throws FPTNException isequal(X, X)
+    @test_throws FPTNException X ≈ X
+    @test_throws FPTNException X < X
+    @test_throws FPTNException isless(X, X)
+    @test_throws FPTNException X > X
+    @test_throws FPTNException X <= X
+    @test_throws FPTNException X >= X
+    @test_throws FPTNException X ⊇ X
+    @test_throws FPTNException X ⊆ X
+    @test_throws FPTNException isfinite(X)
+    @test_throws FPTNException isinf(X)
+    @test_throws FPTNException isnan(X)
+
 end
 
 end # module ThickNumbersInterfaceTests

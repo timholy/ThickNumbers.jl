@@ -1,6 +1,6 @@
 module ThickNumbers
 
-export ThickNumber
+export ThickNumber, FPTNException
 
 # Traits
 export valuetype
@@ -17,14 +17,30 @@ export lohi, midrad, loval, hival, mid, wid, rad, mag, mig
 export emptyset, hull, issubset_tn, ⫃, is_strict_subset_tn, ⪽, issupset_tn, ⫄, is_strict_supset_tn, ⪾
 
 # Operators
-export isequal_tn, iseq_tn, ⩦, isapprox_tn, ⩪, isless_tn, ≺, ≻, ⪯, ⪰
+export isequal_tn, iseq_tn, ≐, isapprox_tn, ⩪, isless_tn, ≺, ≻, ⪯, ⪰
 
 # Unary
 export isfinite_tn, isinf_tn, isnan_tn
 
-# Types and traits
+# Types
 
 abstract type ThickNumber{T<:Number} <: Number end
+
+struct FPTNException
+    f
+    frep
+
+    FPTNException(@nospecialize(f), @nospecialize(frep=nothing)) = new(f, frep)
+end
+
+function Base.showerror(io::IO, err::FPTNException)
+    print(io, "FPTNException: ", err.f, " is deliberately not implemented for ThickNumber objects (see documentation).")
+    if err.frep !== nothing
+        print(io,  "\nConsider using ", err.frep, " instead.")
+    end
+end
+
+# Traits
 
 """
     valuetype(::Type{<:ThickNumber})
@@ -250,6 +266,7 @@ Base.promote_rule(::Type{ThickNumber{T}}, ::Type{ThickNumber{S}}) where {T<:Numb
 Returns `true` if all values in `x` are finite, `false` otherwise.
 """
 isfinite_tn(a::ThickNumber) = isfinite(loval(a)) & isfinite(hival(a))
+Base.isfinite(::ThickNumber) = throw(FPTNException(isfinite, isfinite_tn))
 
 """
     isinf_tn(x::ThickNumber)
@@ -257,6 +274,7 @@ isfinite_tn(a::ThickNumber) = isfinite(loval(a)) & isfinite(hival(a))
 Returns `true` if any value in `x` is infinite, `false` otherwise.
 """
 isinf_tn(a::ThickNumber) = isinf(loval(a)) | isinf(hival(a))
+Base.isinf(::ThickNumber) = throw(FPTNException(isinf, isinf_tn))
 
 """
     isnan_tn(x::ThickNumber)
@@ -264,6 +282,8 @@ isinf_tn(a::ThickNumber) = isinf(loval(a)) | isinf(hival(a))
 Returns `true` if any value in `x` is NaN, `false` otherwise.
 """
 isnan_tn(a::ThickNumber) = isnan(loval(a)) | isnan(hival(a))
+Base.isnan(::ThickNumber) = throw(FPTNException(isnan, isnan_tn))
+
 
 Base.typemin(::Type{TN}) where TN<:ThickNumber{T} where T<:Number = TN(typemin(T), typemin(T))
 Base.typemax(::Type{TN}) where TN<:ThickNumber{T} where T<:Number = TN(typemax(T), typemax(T))
@@ -296,6 +316,7 @@ function issubset_tn(a::ThickNumber, b::ThickNumber)
     loval(b) ≤ loval(a) && hival(a) ≤ hival(b)
 end
 const ⫃ = issubset_tn
+Base.issubset(a::ThickNumber) = throw(FPTNException("issubset (or ⊆)", "issubset_tn (or ⫃)"))
 
 """
     is_strict_subset_tn(a::ThickNumber, b::ThickNumber)
@@ -307,7 +328,7 @@ Returns `true` if `a` is a strict subset of `b`, `false` otherwise.
 See documentation for why this is not just `⊂`.
 """
 function is_strict_subset_tn(a::ThickNumber, b::ThickNumber)
-    a == b && return false
+    a ≐ b && return false
     return issubset_tn(a, b)
 end
 const ⪽ = is_strict_subset_tn
@@ -320,6 +341,7 @@ The converse of [`issubset_tn`](@ref).
 """
 issupset_tn(a::ThickNumber, b::ThickNumber) = issubset_tn(b, a)
 const ⫄ = issupset_tn
+Base.:(⊇)(a::ThickNumber) = throw(FPTNException(⊇, ⫄))
 
 """
     is_strict_supset_tn(a::ThickNumber, b::ThickNumber)
@@ -367,19 +389,21 @@ hull(a::TN, b::TN) where TN<:ThickNumber =
 Returns `true` if `a` and `b` are both empty or both `loval` and `hival` are equal in the sense of `isequal`. It is `false` otherwise.
 """
 isequal_tn(a::ThickNumber, b::ThickNumber) = (isempty(a) & isempty(b)) | (isequal(loval(a), loval(b)) & isequal(hival(a), hival(b)))
+Base.isequal(::ThickNumber, ::ThickNumber) = throw(FPTNException(isequal, isequal_tn))
 
 """
     iseq_tn(a::ThickNumber, b::ThickNumber)
-    a ⩦ b
+    a ≐ b  (`\\doteq`-TAB`)
 
 Returns `true` if `a` and `b` are both empty or both `loval` and `hival` are equal in the sense of `==`. It is `false` otherwise.
 """
 iseq_tn(a::ThickNumber, b::ThickNumber) = (isempty(a) & isempty(b)) | ((loval(a) == loval(b)) & (hival(a) == hival(b)))
-const ⩦ = iseq_tn
+const ≐ = iseq_tn
+Base.:(==)(::ThickNumber, ::ThickNumber) = throw(FPTNException(==, "≐ (\\doteq-TAB) or iseq_tn"))
 
 """
     isapprox_tn(a::ThickNumber, b::ThickNumber; atol=0, rtol::Real=atol>0 ? 0 : √eps)
-    a ⩪ b
+    a ⩪ b (`\\dotsim`-TAB)
 
 Returns `true` if `a` and `b` are both empty or both `loval` and `hival` are approximately equal (≈). It is `false` otherwise.
 """
@@ -393,6 +417,7 @@ function Base.rtoldefault(x::Union{TN1,Type{TN1}}, y::Union{TN2,Type{TN2}}, atol
 end
 Base.rtoldefault(::Type{TN}) where TN<:ThickNumber{T} where T = Base.rtoldefault(T)
 const ⩪ = isapprox_tn
+Base.isapprox(::ThickNumber, ::ThickNumber; kwargs...) = throw(FPTNException("isapprox (or ≈)", "isapprox_tn (or ⩪, \\dotsim-TAB)"))
 
 """
     isless_tn(a::ThickNumber, b::ThickNumber)
@@ -400,6 +425,7 @@ const ⩪ = isapprox_tn
 Returns `true` if `isless(hival(a), loval(b))`, `false` otherwise. See also [`≺`](@ref).
 """
 isless_tn(a::ThickNumber, b::ThickNumber) = isless(hival(a), loval(b))
+Base.isless(::ThickNumber, ::ThickNumber) = throw(FPTNException(isless, isless_tn))
 
 """
     a ≺ b
@@ -407,6 +433,7 @@ isless_tn(a::ThickNumber, b::ThickNumber) = isless(hival(a), loval(b))
 Returns `true` if `hival(a) < loval(b)`, `false` otherwise. Use `\\prec`-TAB to type.
 """
 ≺(a::ThickNumber, b::ThickNumber) = hival(a) < loval(b)
+Base.:(<)(::ThickNumber, ::ThickNumber) = throw(FPTNException(<, "≺ (\\prec-TAB)"))
 
 """
     a ≻ b
@@ -414,6 +441,7 @@ Returns `true` if `hival(a) < loval(b)`, `false` otherwise. Use `\\prec`-TAB to 
 Returns `true` if `loval(a) > hival(b)`, `false` otherwise. Use `\\succ`-TAB to type.
 """
 ≻(a::ThickNumber, b::ThickNumber) = hival(a) > loval(b)
+Base.:(>)(::ThickNumber, ::ThickNumber) = throw(FPTNException(>, "≻ (\\succ-TAB)"))
 
 """
     a ≼ b
@@ -421,6 +449,7 @@ Returns `true` if `loval(a) > hival(b)`, `false` otherwise. Use `\\succ`-TAB to 
 Returns `true` if `hival(a) ≤ loval(b)`, `false` otherwise. Use `\\preceq`-TAB to type.
 """
 ⪯(a::ThickNumber, b::ThickNumber) = hival(a) < loval(b)
+Base.:(<=)(::ThickNumber, ::ThickNumber) = throw(FPTNException(<=, "⪯ (\\preceq-TAB)"))
 
 """
     a ≽ b
@@ -428,6 +457,7 @@ Returns `true` if `hival(a) ≤ loval(b)`, `false` otherwise. Use `\\preceq`-TAB
 Returns `true` if `loval(a) ≥ hival(b)`, `false` otherwise. Use `\\succeq`-TAB to type.
 """
 ⪰(a::ThickNumber, b::ThickNumber) = hival(a) > loval(b)
+Base.:(>=)(::ThickNumber, ::ThickNumber) = throw(FPTNException(>=, "⪰ (\\succeq-TAB)"))
 
 
 ## Unary + and -
