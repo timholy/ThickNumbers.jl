@@ -1,12 +1,7 @@
 using ThickNumbers
 using Test
 
-const interfacetestsdir = abspath(joinpath(dirname(@__DIR__), "ThickNumbersInterfaceTests"))
-const testpackagesdir = joinpath(interfacetestsdir, "test", "testpackages")
-
-if testpackagesdir ∉ LOAD_PATH
-    push!(LOAD_PATH, testpackagesdir)
-end
+include("setpath.jl")
 
 using IntervalArith
 
@@ -118,7 +113,6 @@ using IntervalArith
     @test [Interval(1, 2), Interval(0, 1+eps())] ⩪ [Interval(1, 2*(1+eps())), Interval(0, 1)]
 end
 
-filter!(LOAD_PATH) do path
-    path != testpackagesdir && path != interfacetestsdir
-end
-nothing
+include(joinpath("extensions", "runtests.jl"))
+
+cleanup()
