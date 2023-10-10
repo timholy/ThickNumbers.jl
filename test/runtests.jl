@@ -7,6 +7,23 @@ using IntervalArith
 
 @testset "ThickNumbers generics" begin
     # Test all the operations defined in ThickNumbers
+    x, y = Interval(1.0, 3.0), Interval(-1.0, 3.0)
+    @test valuetype(x) === valuetype(typeof(x)) === Float64
+    @test loval(x) === 1.0
+    @test hival(x) === 3.0
+    @test mid(x) === 2.0
+    @test wid(x) === 2.0
+    @test rad(x) === 1.0
+    @test typemin(x) ≐ Interval(-Inf, -Inf)
+    @test typemax(x) ≐ Interval(Inf, Inf)
+    @test mig(x) === 1.0
+    @test mig(y) === 0.0
+    @test mag(x) === 3.0
+    @test mag(y) === 3.0
+    @test mag(Interval(-5, 1)) === 5
+    @test lohi(Interval{Float64}, 1, 3) === x
+    @test midrad(Interval{Float64}, 2, 1) === x
+
     @test isequal_tn(Interval(1, 2), Interval(1, 2))
     @test_throws FPTNException isequal(Interval(1, 2), Interval(1, 2))
     @test !isequal_tn(Interval(1, 2), Interval(1, 3))
@@ -82,16 +99,6 @@ using IntervalArith
     @test isnan_tn(Interval(NaN, NaN))
     @test !isnan_tn(Interval(1, 2))
     @test !isnan_tn(Interval(1, Inf))
-
-    x, y = Interval(1.0, 3.0), Interval(-1.0, 3.0)
-    @test valuetype(x) === valuetype(typeof(x)) === Float64
-    @test typemin(x) ≐ Interval(-Inf, -Inf)
-    @test typemax(x) ≐ Interval(Inf, Inf)
-    @test mig(x) === 1.0
-    @test mig(y) === 0.0
-    @test mag(x) === 3.0
-    @test mag(y) === 3.0
-    @test mag(Interval(-5, 1)) === 5
 
     @test x ≐ +x
     @test -x ≐ Interval(-3.0, -1.0)
