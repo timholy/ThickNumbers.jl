@@ -1,5 +1,7 @@
 module ThickNumbers
 
+using LinearAlgebra
+
 export ThickNumber, FPTNException
 
 # Traits
@@ -169,6 +171,7 @@ end
 
 """
     emptyset(::Type{TN}) where TN<:ThickNumber
+    emptyset(x::ThickNumber)
 
 Construct an "empty set" of type `TN`.
 
@@ -187,6 +190,7 @@ Interval{Float64}(Inf, -Inf)
 ```
 """
 emptyset(::Type{TN}) where TN<:ThickNumber{T} where T = lohi(TN, typemax(T), typemin(T))
+emptyset(x::ThickNumber) = emptyset(typeof(x))
 
 # Derived exports
 
@@ -316,7 +320,7 @@ function issubset_tn(a::ThickNumber, b::ThickNumber)
     loval(b) ≤ loval(a) && hival(a) ≤ hival(b)
 end
 const ⫃ = issubset_tn
-Base.issubset(a::ThickNumber) = throw(FPTNException("issubset (or ⊆)", "issubset_tn (or ⫃)"))
+Base.issubset(::ThickNumber, ::ThickNumber) = throw(FPTNException("issubset (or ⊆)", "issubset_tn (or ⫃)"))
 
 """
     is_strict_subset_tn(a::ThickNumber, b::ThickNumber)
@@ -341,7 +345,7 @@ The converse of [`issubset_tn`](@ref).
 """
 issupset_tn(a::ThickNumber, b::ThickNumber) = issubset_tn(b, a)
 const ⫄ = issupset_tn
-Base.:(⊇)(a::ThickNumber) = throw(FPTNException(⊇, ⫄))
+Base.:(⊇)(::ThickNumber, ::ThickNumber) = throw(FPTNException(⊇, ⫄))
 
 """
     is_strict_supset_tn(a::ThickNumber, b::ThickNumber)
@@ -390,6 +394,8 @@ Returns `true` if `a` and `b` are both empty or both `loval` and `hival` are equ
 """
 isequal_tn(a::ThickNumber, b::ThickNumber) = (isempty(a) & isempty(b)) | (isequal(loval(a), loval(b)) & isequal(hival(a), hival(b)))
 Base.isequal(::ThickNumber, ::ThickNumber) = throw(FPTNException(isequal, isequal_tn))
+isequal_tn(a::ThickNumber, b::Number) = isequal(loval(a), hival(a)) & isequal(loval(a), b)
+isequal_tn(a::Number, b::ThickNumber) = isequal_tn(b, a)
 
 """
     iseq_tn(a::ThickNumber, b::ThickNumber)
@@ -398,6 +404,8 @@ Base.isequal(::ThickNumber, ::ThickNumber) = throw(FPTNException(isequal, isequa
 Returns `true` if `a` and `b` are both empty or both `loval` and `hival` are equal in the sense of `==`. It is `false` otherwise.
 """
 iseq_tn(a::ThickNumber, b::ThickNumber) = (isempty(a) & isempty(b)) | ((loval(a) == loval(b)) & (hival(a) == hival(b)))
+iseq_tn(a::ThickNumber, b::Number) = loval(a) == hival(a) == b
+iseq_tn(a::Number, b::ThickNumber) = iseq_tn(b, a)
 const ≐ = iseq_tn
 Base.:(==)(::ThickNumber, ::ThickNumber) = throw(FPTNException(==, "≐ (\\doteq-TAB) or iseq_tn"))
 
@@ -408,16 +416,33 @@ Base.:(==)(::ThickNumber, ::ThickNumber) = throw(FPTNException(==, "≐ (\\doteq
 Returns `true` if `a` and `b` are both empty or both `loval` and `hival` are approximately equal (≈). It is `false` otherwise.
 """
 function isapprox_tn(x::ThickNumber, y::ThickNumber; atol::Real=0, rtol::Real=Base.rtoldefault(x,y,atol), nans::Bool=false)
-    isempty(x) && isempty(y) && return true
+    (isempty(x) & isempty(y)) && return true
     isequal_tn(x, y) || (isfinite_tn(x) && isfinite_tn(y) && max(abs(hival(x)-hival(y)), abs(loval(x)-loval(y))) <= max(atol, rtol*max(mag(x), mag(y)))) || (nans && isnan(x) && isnan(y))
 end
-function Base.rtoldefault(x::Union{TN1,Type{TN1}}, y::Union{TN2,Type{TN2}}, atol::Real) where {TN1<:ThickNumber,TN2<:ThickNumber}
+isapprox_tn(x::ThickNumber, y::Number; kwargs...) = isapprox(loval(x), y; kwargs...) & isapprox(hival(x), y; kwargs...)
+isapprox_tn(x::Number, y::ThickNumber; kwargs...) = isapprox_tn(y, x; kwargs...)
+function Base.rtoldefault(::Union{TN1,Type{TN1}}, ::Union{TN2,Type{TN2}}, atol::Real) where {TN1<:ThickNumber,TN2<:ThickNumber}
     rtol = max(Base.rtoldefault(TN1),Base.rtoldefault(TN2))
     return atol > 0 ? zero(rtol) : rtol
 end
 Base.rtoldefault(::Type{TN}) where TN<:ThickNumber{T} where T = Base.rtoldefault(T)
 const ⩪ = isapprox_tn
 Base.isapprox(::ThickNumber, ::ThickNumber; kwargs...) = throw(FPTNException("isapprox (or ≈)", "isapprox_tn (or ⩪, \\dotsim-TAB)"))
+
+function isapprox_tn(x::AbstractArray, y::AbstractArray;
+    atol::Real=0,
+    rtol::Real=Base.rtoldefault(LinearAlgebra.promote_leaf_eltypes(x),LinearAlgebra.promote_leaf_eltypes(y),atol),
+    nans::Bool=false, norm::Function=_norm)
+    function magnorm(x::AbstractArray)
+        n = norm(x)
+        return isa(n, ThickNumber) ? mag(n) : n
+    end
+
+    normx, normy = magnorm(x), magnorm(y)
+    tol = max(atol, rtol*max(normx, normy))
+    return mapreduce((a, b) -> isapprox_tn(a, b; atol=tol, nans=nans), &, x, y)
+end
+_norm(x::AbstractArray) = sqrt(sum(abs2, x))
 
 """
     isless_tn(a::ThickNumber, b::ThickNumber)
