@@ -32,8 +32,12 @@ function test_required(f::Function, @nospecialize(TN), @nospecialize(Ts=nothing)
     @test hi ∈ x
     @test lo ≈ loval(x)
     @test hi ≈ hival(x)
+    if isa(TN, UnionAll)
+        @test basetype(TN) === TN
+    end
     if Ts !== nothing
         for T in Ts
+            @test basetype(TN{T}) === TN
             for (x, l, h) in ((f(TN{T}, lo, hi), lo, hi), (f(TN{T}, 1, 2.0), 1.0, 2.0))
                 @test typeof(x) <: TN{T}
                 @test valuetype(x) === valuetype(typeof(x)) === T

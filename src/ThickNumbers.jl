@@ -5,7 +5,7 @@ using LinearAlgebra
 export ThickNumber, FPTNException
 
 # Traits
-export valuetype
+export valuetype, basetype
 
 # These mimic IEEE Std 1788-2015, Table 9.2, but with `inf` and `sup`
 # replaced by names that do not imply true bounds.
@@ -124,6 +124,39 @@ the presence of roundoff error.
 """
 lohi(::Type{TN}, lo, hi) where TN<:ThickNumber = error("lohi not defined for $TN")
 
+"""
+    basetype(::Type{TN}) where TN<:ThickNumber
+
+Strip the `valuetype` from `TN`.
+
+# Interface requirements
+
+`basetype` must be implemented by all ThickNumber subtypes.
+
+# Examples
+
+In a package implementing `Interval` you would define
+
+```julia
+ThickNumbers.basetype(::Type{Interval{T}}) where T = Interval
+ThickNumbers.basetype(::Type{Interval}) = Interval
+```
+
+so that
+
+```julia
+julia> basetype(Interval{Float64})
+Interval
+```
+
+This can be used to construct `valuetype`-agnostic ThickNumbers:
+
+```julia
+julia> lohi(basetype(Interval{Float64}), 1, 2))
+Interval{$Int}(1, 2)
+```
+"""
+basetype(::Type{TN}) where TN<:ThickNumber = error("basetype not defined for $TN")
 
 # Optional specializations
 

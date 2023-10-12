@@ -19,6 +19,8 @@ Interval{T}(x::Number) where T = Interval{T}(x, x)
 ThickNumbers.loval(x::Interval) = x.lo
 ThickNumbers.hival(x::Interval) = x.hi
 ThickNumbers.lohi(::Type{I}, lo, hi) where I<:Interval = I(lo, hi)
+ThickNumbers.basetype(::Type{Interval{T}}) where T = Interval
+ThickNumbers.basetype(::Type{Interval}) = Interval
 
 # These are needed only for `Interval` and not `Interval{T}`
 ThickNumbers.midrad(::Type{Interval}, mid::T, rad::T) where T = midrad(Interval{T}, mid, rad)
