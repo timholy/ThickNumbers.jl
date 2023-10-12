@@ -27,5 +27,5 @@ makedocs(;
 deploydocs(;
     repo="github.com/timholy/ThickNumbers.jl",
     devbranch="main",
-    push_preview=true,
+    push_preview=false,      # see also the corresponding flag in .github/workflows/CleanPreview.yml
 )

@@ -6,6 +6,7 @@ on:
 
 jobs:
   doc-preview-cleanup:
+    if: false                        # disable this workflow (change if `push_preview=true` in make.jl)
     runs-on: ubuntu-latest
     permissions:
       contents: write
