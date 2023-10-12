@@ -21,6 +21,7 @@ The following interface functions must be defined:
 
 - [`loval(x)`](@ref): should return the lower span (i.e., the "lower bound" if such bounds are strict).
 - [`hival(x)`](@ref): should return the upper span.
+- [`basetype(x)`](@ref): should strip the `valuetype`, i.e., `basetype(Interval{Float64})` returns `Interval`.
 - any arithmetic operations you need, e.g., `+`, `-`, `*`, and `/`
 
 The implementation of these functions must satisfy certain requirements spelled out in the documentation of each of these functions.

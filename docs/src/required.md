@@ -5,6 +5,7 @@ Each package creating a new `ThickNumber` subtype must implement:
 ```@docs
 loval
 hival
+basetype
 ```
 
 If possible, you should also implement:
