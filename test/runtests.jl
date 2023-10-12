@@ -23,6 +23,7 @@ using IntervalArith
     @test mag(Interval(-5, 1)) === 5
     @test lohi(Interval{Float64}, 1, 3) === x
     @test midrad(Interval{Float64}, 2, 1) === x
+    @test basetype(Interval{Float64}) === Interval
 
     @test isequal_tn(Interval(1, 2), Interval(1, 2))
     @test_throws FPTNException isequal(Interval(1, 2), Interval(1, 2))
