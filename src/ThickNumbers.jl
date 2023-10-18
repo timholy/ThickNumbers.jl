@@ -157,6 +157,7 @@ Interval{$Int}(1, 2)
 ```
 """
 basetype(::Type{TN}) where TN<:ThickNumber = error("basetype not defined for $TN")
+basetype(x::ThickNumber) = basetype(typeof(x))
 
 # Optional specializations
 
@@ -525,6 +526,17 @@ Base.:(-)(a::TN) where TN<:ThickNumber{T} where T<:Integer = lohi(TN,
     Base.Checked.checked_neg(hival(a)),
     Base.Checked.checked_neg(loval(a))
 )
+
+# Functions
+
+Base.eps(::Type{TN}) where TN<:ThickNumber{T} where T = (e = eps(T); lohi(TN, e, e))
+Base.eps(x::ThickNumber) = lohi(typeof(x), eps(mig(x)), eps(mag(x)))
+
+Base.signbit(x::ThickNumber) = lohi(basetype(typeof(x)), signbit(hival(x)), signbit(loval(x)))
+
+Base.abs(x::ThickNumber) = lohi(typeof(x), mig(x), mag(x))
+
+Base.clamp(x::ThickNumber, lo::Real, hi::Real) = lohi(basetype(x), max(lo, loval(x)), min(hi, hival(x)))
 
 
 end # module

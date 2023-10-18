@@ -20,4 +20,16 @@ using IntervalArith
     @test df2(b) ⩪ b
     ddf2(x) = ForwardDiff.derivative(df2, x)
     @test ddf2(b) ≐ 1
+
+    # abs
+    dabs(x) = ForwardDiff.derivative(abs, x)
+    ddabs(x) = ForwardDiff.derivative(dabs, x)
+    dddabs(x) = ForwardDiff.derivative(ddabs, x)
+    @test dabs(Interval(1.0, 2.0)) === Interval(1.0, 1.0)
+    @test ddabs(Interval(1.0, 2.0)) === Interval(0.0, 0.0)
+    @test dddabs(Interval(1.0, 2.0)) === Interval(0.0, 0.0)
+    @test dabs(Interval(-1.0, 2.0)) === Interval(-1.0, 1.0)
+    @test ddabs(Interval(-1.0, 2.0)) === Interval(0.0, Inf)
+    abs3 = dddabs(Interval(-1.0, 2.0))
+    @test abs3 === Interval(-Inf, Inf) || isnan_tn(abs3)
 end

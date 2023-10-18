@@ -121,6 +121,13 @@ using IntervalArith
     @test [Interval(1, 2), Interval(0, 1+eps())] ⩪ [Interval(1, 2*(1+eps())), Interval(0, 1)]
 end
 
+@testset "Specializations" begin
+    @test loval(signbit(Interval(-1, 1))) === false
+    @test hival(signbit(Interval(-1, 1))) === true
+    @test eps(Interval(1.0, 1000.0)) === Interval(eps(1.0), eps(1000.0))
+    @test clamp(Interval(-1, 4), 2, 3) === Interval(2, 3)
+end
+
 include(joinpath("extensions", "runtests.jl"))
 
 cleanup()

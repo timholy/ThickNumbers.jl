@@ -1,7 +1,17 @@
 module ThickNumbersForwardDiffExt
 
 using ThickNumbers
-using ForwardDiff: ForwardDiff, Dual, Partials, Tag
+using ForwardDiff: ForwardDiff, Dual, Partials, Tag, value, partials, npartials, tagtype
+using ForwardDiff.DiffRules: DiffRules, @define_diffrule
+# Supports up to third-order derivatives
+const ThickDual = Union{Dual{T,<:ThickNumber} where T,
+                        Dual{T1,<:Dual{T2,<:ThickNumber}} where {T1,T2},
+                        Dual{T1,<:Dual{T2,<:Dual{T3,<:ThickNumber}}} where {T1,T2,T3},
+}
+const ThickLike = Union{ThickNumber, ThickDual}
+
+ThickNumbers.mig(x::ThickDual) = mig(value(x))
+ThickNumbers.mag(x::ThickDual) = mag(value(x))
 
 function ForwardDiff.derivative(f::F, x::TN) where {F,TN<:ThickNumber}
     T = typeof(Tag(f, TN))
@@ -26,5 +36,30 @@ Base.promote_rule(::Type{TN}, ::Type{Dual{T,V,N}}) where {TN<:ThickNumber,T,V<:N
 
 promote_dual(::Type{TN}, ::Type{V}) where {TN<:ThickNumber,V} = promote_type(TN, V)
 promote_dual(::Type{TN}, ::Type{Dual{T,V,N}}) where {TN<:ThickNumber,T,V,N} = Dual{T, promote_dual(TN, V), N}
+ThickNumbers.iseq_tn(x::Dual{Txy}, y::Dual{Txy}) where Txy = iseq_tn(x.value, y.value) && iseq_tn(x.partials, y.partials)
+ThickNumbers.iseq_tn(a::Partials{N}, b::Partials{N}) where N = all(iseq_tn, zip(a.values, b.values))
+ThickNumbers.iseq_tn(a::Partials, b::Partials) = false
+
+### Special functions
+
+Base.signbit(x::ThickDual) = signbit(value(x))
+
+## First and higher-order derivatives of `abs`
+function DiffRules._abs_deriv(x::ThickNumber)
+    sb = signbit(x)
+    lv, hv = loval(x), hival(x)
+    return lohi(basetype(typeof(x)), true ∈ sb ? -one(lv) : one(lv), false ∈ sb ? one(hv) : -one(hv))
+end
+# Second derivative of abs spans from 0 to either 0 or Inf (if 0 is included in the range)
+_abs_deriv2(x::ThickNumber) = iszero(mig(x)) ? lohi(typeof(x), 0, typemax(valuetype(x))) : zero(x)
+@define_diffrule DiffRules._abs_deriv(x) = :($(_abs_deriv2)($x))
+eval(ForwardDiff.unary_dual_definition(:DiffRules, :_abs_deriv))
+# Third and higher derivatives of abs span from -Inf to Inf, or is zero if 0 is not included in the range
+_abs_deriv3(x::ThickNumber{T}) where T = iszero(mig(x)) ? lohi(typeof(x), typemin(T), typemax(T)) : zero(x)
+@define_diffrule ThickNumbersForwardDiffExt._abs_deriv2(x) = :($(_abs_deriv3)($x))
+@define_diffrule ThickNumbersForwardDiffExt._abs_deriv3(x) = :($(_abs_deriv3)($x))
+eval(ForwardDiff.unary_dual_definition(:ThickNumbersForwardDiffExt, :_abs_deriv2))
+eval(ForwardDiff.unary_dual_definition(:ThickNumbersForwardDiffExt, :_abs_deriv3))
+
 
 end
