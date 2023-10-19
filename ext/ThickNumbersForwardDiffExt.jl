@@ -36,8 +36,6 @@ promote_dual(::Type{TN}, ::Type{Dual{T,V,N}}) where {TN<:ThickNumber,T,V,N} = Du
 
 ### Special functions
 
-Base.signbit(x::ThickDual) = signbit(value(x))
-
 ## First and higher-order derivatives of `abs`
 function DiffRules._abs_deriv(x::ThickNumber)
     sb = signbit(x)
