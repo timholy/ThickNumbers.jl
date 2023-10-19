@@ -10,9 +10,6 @@ const ThickDual = Union{Dual{T,<:ThickNumber} where T,
 }
 const ThickLike = Union{ThickNumber, ThickDual}
 
-ThickNumbers.mig(x::ThickDual) = mig(value(x))
-ThickNumbers.mag(x::ThickDual) = mag(value(x))
-
 function ForwardDiff.derivative(f::F, x::TN) where {F,TN<:ThickNumber}
     T = typeof(Tag(f, TN))
     return ForwardDiff.extract_derivative(T, f(Dual{T}(x, one(x))))
@@ -36,9 +33,6 @@ Base.promote_rule(::Type{TN}, ::Type{Dual{T,V,N}}) where {TN<:ThickNumber,T,V<:N
 
 promote_dual(::Type{TN}, ::Type{V}) where {TN<:ThickNumber,V} = promote_type(TN, V)
 promote_dual(::Type{TN}, ::Type{Dual{T,V,N}}) where {TN<:ThickNumber,T,V,N} = Dual{T, promote_dual(TN, V), N}
-ThickNumbers.iseq_tn(x::Dual{Txy}, y::Dual{Txy}) where Txy = iseq_tn(x.value, y.value) && iseq_tn(x.partials, y.partials)
-ThickNumbers.iseq_tn(a::Partials{N}, b::Partials{N}) where N = all(iseq_tn, zip(a.values, b.values))
-ThickNumbers.iseq_tn(a::Partials, b::Partials) = false
 
 ### Special functions
 
