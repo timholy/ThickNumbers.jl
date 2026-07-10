@@ -21,6 +21,16 @@ using IntervalArith
     ddf2(x) = ForwardDiff.derivative(df2, x)
     @test ddf2(b) ≐ 1
 
+    # Integer powers: `^(::Dual, ::Integer)` tests its partials for zero via
+    # `iszero_tuple`, and the power-rule coefficients reach `dual_definition_retval`
+    # as ordinary `Real`s rather than ThickNumbers.
+    g(x) = x^4
+    dg(x) = ForwardDiff.derivative(g, x)
+    ddg(x) = ForwardDiff.derivative(dg, x)
+    xi = Interval(1.0, 2.0)
+    @test dg(xi) ≐ 4*xi^3
+    @test ddg(xi) ≐ 12*xi^2
+
     # abs
     dabs(x) = ForwardDiff.derivative(abs, x)
     ddabs(x) = ForwardDiff.derivative(dabs, x)
