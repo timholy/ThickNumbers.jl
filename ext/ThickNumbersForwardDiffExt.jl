@@ -29,6 +29,18 @@ function Base.:*(partials::Partials, x::ThickNumber)
     return Partials(ForwardDiff.scale_tuple(partials.values, x))
 end
 
+# ForwardDiff v1's `scale_tuple`/`mul_tuples`/`div_tuple_by_scalar` dispatch
+# elementwise through `_mul_partial`/`_div_partial`, which only ship `Real`-`Real`
+# methods; the partial tuple elements and/or the deriv/factor arguments may be
+# ThickNumber here (e.g. at higher derivative orders), so every ThickNumber/Real
+# combination needs a method.
+ForwardDiff._mul_partial(partial::Real, x::ThickNumber) = partial * x
+ForwardDiff._mul_partial(partial::ThickNumber, x::Real) = partial * x
+ForwardDiff._mul_partial(partial::ThickNumber, x::ThickNumber) = partial * x
+ForwardDiff._div_partial(partial::Real, x::ThickNumber) = partial / x
+ForwardDiff._div_partial(partial::ThickNumber, x::Real) = partial / x
+ForwardDiff._div_partial(partial::ThickNumber, x::ThickNumber) = partial / x
+
 Base.promote_rule(::Type{TN}, ::Type{Dual{T,V,N}}) where {TN<:ThickNumber,T,V<:Number,N} = Dual{T, promote_dual(TN, V),N}
 
 promote_dual(::Type{TN}, ::Type{V}) where {TN<:ThickNumber,V} = promote_type(TN, V)
