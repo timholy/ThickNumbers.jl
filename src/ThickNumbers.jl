@@ -294,6 +294,17 @@ so returns zero. Otherwise, it returns the minimum absolute value of the endpoin
 """
 mig(x::ThickNumber{T}) where T = zero(T) ∈ x ? zero(T) : min(abs(loval(x)), abs(hival(x)))
 
+# A `Real` is a degenerate thick number `[x, x]`, so both its maximum and minimum
+# absolute value are `abs(x)`. Provides `mag`/`mig` for code that mixes thick and
+# point values.
+mag(x::Real) = abs(x)
+mig(x::Real) = abs(x)
+
+# A thick number is zero exactly when it is the degenerate set `[0, 0]`. Unlike
+# `==`, this is unambiguous, so it is defined (and needed by ForwardDiff, which
+# tests partials for exact zero).
+Base.iszero(x::ThickNumber) = iszero(loval(x)) & iszero(hival(x))
+
 Base.promote_rule(::Type{ThickNumber{T}}, ::Type{ThickNumber{S}}) where {T<:Number,S<:Number} = ThickNumber{promote_type(T,S)}
 
 ## Trait functions and constants

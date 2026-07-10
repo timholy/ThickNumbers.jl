@@ -21,6 +21,16 @@ using IntervalArith
     @test mag(x) === 3.0
     @test mag(y) === 3.0
     @test mag(Interval(-5, 1)) === 5
+    # A Real is a degenerate thick number, so mag and mig are its absolute value
+    @test mag(-3.0) === 3.0
+    @test mig(-3.0) === 3.0
+    @test mag(2) === 2
+    @test mig(2) === 2
+    # iszero: true only for the degenerate set [0, 0]
+    @test iszero(Interval(0, 0))
+    @test !iszero(Interval(0, 1))
+    @test !iszero(Interval(-1, 0))
+    @test !iszero(Interval(-1, 1))
     @test lohi(Interval{Float64}, 1, 3) === x
     @test midrad(Interval{Float64}, 2, 1) === x
     @test basetype(Interval{Float64}) === Interval

@@ -17,10 +17,14 @@ end
 
 ForwardDiff.can_dual(::Type{<:ThickNumber}) = true
 
-function ForwardDiff.dual_definition_retval(::Val{T}, val::ThickNumber, deriv::ThickNumber, partial::Partials) where {T}
+# The value is a ThickNumber (the function evaluated over a set), but a diffrule
+# derivative may be an ordinary `Real` (e.g. the integer coefficient from a power
+# rule), so `deriv` is left as `Number`. `val::ThickNumber` keeps these from
+# overlapping ForwardDiff's all-`Real` methods.
+function ForwardDiff.dual_definition_retval(::Val{T}, val::ThickNumber, deriv::Number, partial::Partials) where {T}
     return Dual{T}(val, deriv * partial)
 end
-function ForwardDiff.dual_definition_retval(::Val{T}, val::ThickNumber, deriv1::ThickNumber, partial1::Partials, deriv2::ThickNumber, partial2::Partials) where {T}
+function ForwardDiff.dual_definition_retval(::Val{T}, val::ThickNumber, deriv1::Number, partial1::Partials, deriv2::Number, partial2::Partials) where {T}
     return Dual{T}(val, ForwardDiff._mul_partials(partial1, partial2, deriv1, deriv2))
 end
 
@@ -40,6 +44,11 @@ ForwardDiff._mul_partial(partial::ThickNumber, x::ThickNumber) = partial * x
 ForwardDiff._div_partial(partial::Real, x::ThickNumber) = partial / x
 ForwardDiff._div_partial(partial::ThickNumber, x::Real) = partial / x
 ForwardDiff._div_partial(partial::ThickNumber, x::ThickNumber) = partial / x
+
+# ForwardDiff's `iszero_tuple` tests each partial with `==`, which ThickNumber
+# disables. Test exact-zeroness with `iszero` instead (defined for ThickNumber and,
+# recursively, for nested Duals over ThickNumbers).
+ForwardDiff.iszero_tuple(tup::NTuple{N,V}) where {N,V<:ThickLike} = all(iszero, tup)
 
 Base.promote_rule(::Type{TN}, ::Type{Dual{T,V,N}}) where {TN<:ThickNumber,T,V<:Number,N} = Dual{T, promote_dual(TN, V),N}
 
