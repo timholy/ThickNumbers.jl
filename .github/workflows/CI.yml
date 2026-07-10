@@ -20,26 +20,28 @@ jobs:
       matrix:
         version:
           - '1'
-          - '1.9'
+          - 'min'
         os:
           - ubuntu-latest
         arch:
           - x64
     steps:
-      - uses: actions/checkout@v3
-      - uses: julia-actions/setup-julia@v1
+      - uses: actions/checkout@v7
+      - uses: julia-actions/setup-julia@v3
         with:
           version: ${{ matrix.version }}
           arch: ${{ matrix.arch }}
-      - uses: julia-actions/cache@v1
+      - uses: julia-actions/cache@v3
       - uses: julia-actions/julia-buildpkg@v1
       - uses: julia-actions/julia-runtest@v1
       - name: InterfaceTests
         run: julia --project=ThickNumbersInterfaceTests -e 'using Pkg; Pkg.develop(path=pwd()); Pkg.test(coverage="all")'
       - uses: julia-actions/julia-processcoverage@v1
-      - uses: codecov/codecov-action@v3
+      - uses: codecov/codecov-action@v5
         with:
           files: lcov.info
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: true
   docs:
     name: Documentation
     runs-on: ubuntu-latest
@@ -47,8 +49,8 @@ jobs:
       contents: write
       statuses: write
     steps:
-      - uses: actions/checkout@v3
-      - uses: julia-actions/setup-julia@v1
+      - uses: actions/checkout@v7
+      - uses: julia-actions/setup-julia@v3
         with:
           version: '1'
       - name: Configure doc environment
