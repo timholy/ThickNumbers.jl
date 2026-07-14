@@ -36,6 +36,12 @@ There are also numerous optional methods you can specialize if it makes `MyType`
 efficiently. For example, a Gaussian random variable package might want to implement [`midrad(MyType{T}, center, σ)`](@ref) to construct values directly, assuming this is the natural parametrization
 of this type.
 
+`MyType` need not be parametrized by its `lo` and `hi` values: generic code constructs its
+results only through [`lohi`](@ref) and [`midrad`](@ref), never by calling a two-argument
+`MyType(a, b)` constructor. One caveat: the default [`emptyset`](@ref) spans
+`[typemax(T), typemin(T)]`, whose midpoint is `NaN`, so a type parametrized by a midpoint
+must specialize `emptyset`; a negative radius is the natural choice.
+
 ## Ensuring compliance with the ThickNumbers interface
 
 The `ThickNumbersInterfaceTests` package can be used to determine whether your implementations comply with the requirements.  As it is possible that this test suite will evolve and add new requirements,

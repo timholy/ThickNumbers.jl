@@ -1,0 +1,7 @@
+name = "MidRadArith"
+uuid = "739db5bf-5d3a-4748-80ba-ed5827d60a8c"
+authors = ["Tim Holy <tim.holy@gmail.com>"]
+version = "0.1.0"
+
+[deps]
+ThickNumbers = "b57aa878-5b76-4266-befc-f8e007760995"

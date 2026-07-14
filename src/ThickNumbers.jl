@@ -334,8 +334,10 @@ isnan_tn(a::ThickNumber) = isnan(loval(a)) | isnan(hival(a))
 Base.isnan(::ThickNumber) = throw(FPTNException(isnan, isnan_tn))
 
 
-Base.typemin(::Type{TN}) where TN<:ThickNumber{T} where T<:Number = TN(typemin(T), typemin(T))
-Base.typemax(::Type{TN}) where TN<:ThickNumber{T} where T<:Number = TN(typemax(T), typemax(T))
+# Construct via `midrad` rather than `lohi`: for a type parametrized by midpoint
+# and radius, a span of [typemin, typemin] would compute a radius of `Inf - Inf`.
+Base.typemin(::Type{TN}) where TN<:ThickNumber{T} where T<:Number = midrad(TN, typemin(T), zero(T))
+Base.typemax(::Type{TN}) where TN<:ThickNumber{T} where T<:Number = midrad(TN, typemax(T), zero(T))
 Base.typemin(x::ThickNumber) = typemin(typeof(x))
 Base.typemax(x::ThickNumber) = typemax(typeof(x))
 
@@ -415,7 +417,7 @@ end
 
 function Base.intersect(a::TN, b::TN) where TN<:ThickNumber
     isdisjoint(a,b) && return emptyset(TN)
-    TN(max(loval(a), loval(b)), min(hival(a), hival(b)))
+    lohi(TN, max(loval(a), loval(b)), min(hival(a), hival(b)))
 end
 Base.intersect(a::ThickNumber, b::ThickNumber) = intersect(promote(a, b)...)
 Base.intersect(a::ThickNumber, b::ThickNumber, c::ThickNumber...) = intersect(intersect(a, b), c...)
@@ -428,7 +430,7 @@ Construct a `ThickNumber` containing `a`, `b`, and `c...`.
 hull(a::ThickNumber, b::ThickNumber, c::ThickNumber...) = hull(hull(a, b), c...)
 hull(a::ThickNumber, b::ThickNumber) = hull(promote(a, b)...)
 hull(a::TN, b::TN) where TN<:ThickNumber =
-    TN(min(loval(a), loval(b)), max(hival(a), hival(b)))
+    lohi(TN, min(loval(a), loval(b)), max(hival(a), hival(b)))
 
 ## Operators
 
