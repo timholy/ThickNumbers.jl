@@ -4,6 +4,7 @@ using Test
 include("setpath.jl")
 
 using IntervalArith
+using MidRadArith
 
 @testset "ThickNumbers generics" begin
     # Test all the operations defined in ThickNumbers
@@ -141,6 +142,34 @@ end
     @test hival(signbit(Interval(-1, 1))) === true
     @test eps(Interval(1.0, 1000.0)) === Interval(eps(1.0), eps(1000.0))
     @test clamp(Interval(-1, 4), 2, 3) === Interval(2, 3)
+end
+
+# Generic code must construct results with `lohi`/`midrad` rather than with a
+# two-argument `TN(lo, hi)` call, which assumes a lo/hi parametrization. `MidRad`
+# stores a midpoint and radius, so such a call silently reinterprets the upper
+# bound as a radius; the resulting span is wrong while `Interval` still looks fine.
+@testset "parametrization independence: $TN" for TN in (Interval, MidRad)
+    span(x) = (loval(x), hival(x))
+
+    @test span(typemin(TN{Float64})) === (-Inf, -Inf)
+    @test span(typemax(TN{Float64})) === (Inf, Inf)
+
+    a = lohi(TN, 1.0, 3.0)
+    b = lohi(TN, 2.0, 5.0)   # overlaps `a`
+    c = lohi(TN, 7.0, 8.0)   # disjoint from `a`
+
+    @test span(hull(a, b)) === (1.0, 5.0)
+    @test span(hull(a, c)) === (1.0, 8.0)
+    @test span(hull(a, a)) === (1.0, 3.0)
+    @test span(hull(a, b, c)) === (1.0, 8.0)
+
+    @test span(intersect(a, b)) === (2.0, 3.0)
+    @test span(intersect(a, a)) === (1.0, 3.0)
+    @test isempty(intersect(a, c))
+
+    # A hull contains both operands; an intersection is contained by both.
+    @test a ⫃ hull(a, b) && b ⫃ hull(a, b)
+    @test intersect(a, b) ⫃ a && intersect(a, b) ⫃ b
 end
 
 include(joinpath("extensions", "runtests.jl"))
