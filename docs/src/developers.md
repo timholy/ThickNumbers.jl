@@ -50,3 +50,21 @@ be sure to use `[compat]` bounds to specify the major version number of `ThickNu
 ## Features provided by subtyping ThickNumber
 
 See the [User API](@ref).
+
+## Implementing the interface without subtyping
+
+Subtype `ThickNumber` to inherit the generic methods in the [User API](@ref).
+
+A type with another supertype can implement the interface by defining [`isthick`](@ref):
+
+```julia
+ThickNumbers.isthick(::Type{<:MyType}) = true
+```
+
+It must implement [`loval`](@ref), [`hival`](@ref), [`lohi`](@ref), [`basetype`](@ref),
+supported arithmetic, and any needed derived methods. These may include [`mid`](@ref),
+[`wid`](@ref), [`rad`](@ref), [`mag`](@ref), [`mig`](@ref), [`hull`](@ref),
+[`emptyset`](@ref), [`isempty_tn`](@ref), [`isnan_tn`](@ref), [`isinf_tn`](@ref),
+[`isfinite_tn`](@ref), and `iszero`.
+
+Use `isthick(x)` to recognize both kinds of implementation.

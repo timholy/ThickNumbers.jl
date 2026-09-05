@@ -10,6 +10,10 @@ using MidRadArith
     # Test all the operations defined in ThickNumbers
     x, y = Interval(1.0, 3.0), Interval(-1.0, 3.0)
     @test valuetype(x) === valuetype(typeof(x)) === Float64
+    @test !isthick(Float64)
+    @test !isthick(3.0)
+    @test isthick(Interval{Float64})
+    @test isthick(x)
     @test loval(x) === 1.0
     @test hival(x) === 3.0
     @test mid(x) === 2.0
@@ -105,6 +109,10 @@ using MidRadArith
     @test emptyset(Interval{Float32}) === Interval(Inf32, -Inf32)
     @test emptyset(Interval{Float64}) === Interval(Inf, -Inf)
     @test emptyset(Interval(1.0, 2.0)) === Interval(Inf, -Inf)
+    @test isempty_tn(emptyset(Interval{Float64}))
+    @test !isempty_tn(x)
+    @test isempty(x) == isempty_tn(x)
+    @test isempty(emptyset(Interval{Float64})) == isempty_tn(emptyset(Interval{Float64}))
     @test isfinite_tn(Interval(1, 2))
     @test_throws FPTNException isfinite(Interval(1, 2))
     @test !isfinite_tn(Interval(1, Inf))

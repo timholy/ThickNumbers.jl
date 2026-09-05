@@ -64,6 +64,7 @@ You can also check a few basic properties, like whether the values contained in 
 ### Type information
 
 - [`valuetype(X)`](@ref): return the type of numbers contained in `X` (e.g., `Float64`)
+- [`isthick(X)`](@ref): return `true` if `X` (or its type) implements the ThickNumbers interface
 
 ### Generic constructors
 
@@ -92,6 +93,7 @@ For an explanation of why these aren't just `==`, `<`, etc, read [The Fundamenta
 - [`issupset_tn`](@ref) replaces `⊇` (unicode: `⫄`)
 - [`is_strict_supset_tn`](@ref) replaces `⊃` (unicode: `⪾`)
 - [`hull`](@ref) creates a number that contains its arguments
+- [`isempty_tn(X)`](@ref) replaces `isempty(X)`
 
 ### API reference
 
