@@ -33,6 +33,10 @@ returning `true` would imply that `x == y` *for any choice* `x ∈ X` and `y ∈
 unless `X` and `Y` are either empty or each contain only a single value. Concretely, if `1..3` constructs an interval, then `1..3 == 1..3` returning `true` would require that `1.5 == 1.5` and also `1.5 == 2.5` since both `1.5` and `2.5` can be drawn from `1..3`. This is obviously impossible,
 thus having `1..3 == 1..3` return `true` would be a violation of the FPTN; it must error instead.
 
+Unary predicates have the same constraint. If `X` contains both zero and nonzero values,
+`iszero(X)` cannot return one `Bool`. It therefore errors; [`iszero_tn`](@ref) instead
+reports whether `X` is the additive identity `[0, 0]`.
+
 Because numbers are iterable in Julia, set operations like `X ⊆ Y` also cannot be defined (it would require that each number in `X` is a subset of every number in `Y`); however, operations like `intersect(X, Y)` (i.e., `X ∩ Y`) are valid because `x ∩ y` returns `∅` if `x != y` and `∅` is a subset of all other sets.
 
 To avoid violating the FPTN, we replace operators like `==` with custom operators that work only on `ThickNumber{T}` but not `T`. For `Base` Julia functions, a convention is to add `_tn` after the standard function name: `isequal_tn(X, Y)` replaces the "intent" of `isequal(X, Y)`. Often these have unicode equivalents, which typically (though not always) involve a "dot" somewhere in the symbol.
@@ -60,6 +64,7 @@ You can also check a few basic properties, like whether the values contained in 
 - [`isfinite_tn(X)`](@ref)
 - [`isinf_tn(X)`](@ref)
 - [`isnan_tn(X)`](@ref)
+- [`iszero_tn(X)`](@ref): whether `X` is the single point zero
 
 ### Type information
 

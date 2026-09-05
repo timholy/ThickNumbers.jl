@@ -32,6 +32,7 @@ wid
 isfinite_tn
 isinf_tn
 isnan_tn
+iszero_tn
 ```
 
 ## Comparison operators
