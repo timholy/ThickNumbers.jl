@@ -406,7 +406,7 @@ const ⪾ = is_strict_supset_tn
 """
     isempty(x::ThickNumber)
 
-Returns `true` if `hival(x) < loval(x)` is empty, `false` otherwise.
+Returns `true` if the span of `x` is empty (`hival(x) < loval(x)`), `false` otherwise.
 """
 Base.isempty(x::ThickNumber) = hival(x) < loval(x)
 
@@ -516,7 +516,7 @@ Base.:(<)(::ThickNumber, ::ThickNumber) = throw(FPTNException(<, "≺ (\\prec-TA
 
 Returns `true` if `loval(a) > hival(b)`, `false` otherwise. Use `\\succ`-TAB to type.
 """
-≻(a::ThickNumber, b::ThickNumber) = hival(a) > loval(b)
+≻(a::ThickNumber, b::ThickNumber) = loval(a) > hival(b)
 Base.:(>)(::ThickNumber, ::ThickNumber) = throw(FPTNException(>, "≻ (\\succ-TAB)"))
 
 """
@@ -532,7 +532,7 @@ Base.:(<=)(::ThickNumber, ::ThickNumber) = throw(FPTNException(<=, "⪯ (\\prece
 
 Returns `true` if `loval(a) ≥ hival(b)`, `false` otherwise. Use `\\succeq`-TAB to type.
 """
-⪰(a::ThickNumber, b::ThickNumber) = hival(a) >= loval(b)
+⪰(a::ThickNumber, b::ThickNumber) = loval(a) >= hival(b)
 Base.:(>=)(::ThickNumber, ::ThickNumber) = throw(FPTNException(>=, "⪰ (\\succeq-TAB)"))
 
 

@@ -70,6 +70,11 @@ using MidRadArith
     @test !isless_tn(Interval(1, 2), 2)
     @test Interval(1, 2) ⪯ Interval(2, 3)
     @test Interval(2, 3) ⪰ Interval(1, 2)
+    # Overlapping spans are unordered.
+    @test !(Interval(2, 4) ≻ Interval(1, 3))
+    @test !(Interval(1, 3) ≺ Interval(2, 4))
+    @test !(Interval(2, 4) ⪰ Interval(1, 3))
+    @test !(Interval(1, 3) ⪯ Interval(2, 4))
     @test issubset_tn(Interval(1, 2), Interval(1, 2))
     @test Interval(1, 2) ⫃ Interval(1, 2)
     @test_throws FPTNException issubset(Interval(1, 2), Interval(1, 2))
