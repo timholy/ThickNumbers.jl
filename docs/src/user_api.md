@@ -9,6 +9,7 @@ violate the interface requirements.
 
 ```@docs
 valuetype
+isthick
 ```
 
 ## Query functions
@@ -54,6 +55,7 @@ See also [IntervalSets](https://github.com/JuliaMath/IntervalSets.jl) for a more
 in(::Real, ::ThickNumber)
 hull
 Base.isempty(::ThickNumber)
+isempty_tn
 issubset_tn
 issupset_tn
 is_strict_subset_tn

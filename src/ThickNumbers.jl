@@ -5,7 +5,7 @@ using LinearAlgebra
 export ThickNumber, FPTNException
 
 # Traits
-export valuetype, basetype
+export valuetype, basetype, isthick
 
 # These mimic IEEE Std 1788-2015, Table 9.2, but with `inf` and `sup`
 # replaced by names that do not imply true bounds.
@@ -16,7 +16,7 @@ export valuetype, basetype
 export lohi, midrad, loval, hival, mid, wid, rad, mag, mig
 
 # Set operations
-export emptyset, hull, issubset_tn, ⫃, is_strict_subset_tn, ⪽, issupset_tn, ⫄, is_strict_supset_tn, ⪾
+export emptyset, hull, issubset_tn, ⫃, is_strict_subset_tn, ⪽, issupset_tn, ⫄, is_strict_supset_tn, ⪾, isempty_tn
 
 # Operators
 export isequal_tn, iseq_tn, ≐, isapprox_tn, ⩪, isless_tn, ≺, ≻, ⪯, ⪰
@@ -58,6 +58,26 @@ Float64
 """
 valuetype(::Type{TN}) where TN<:ThickNumber{T} where T = T
 valuetype(x::ThickNumber) = valuetype(typeof(x))
+
+"""
+    isthick(::Type{T}) where T
+    isthick(x)
+
+Return whether a type implements the ThickNumbers interface.
+
+# Default implementation
+
+Subtypes of `ThickNumber` return `true` by default:
+
+    isthick(::Type{T}) where T = T <: ThickNumber
+    isthick(x) = isthick(typeof(x))
+
+Types with another supertype can implement the interface by defining
+`isthick(::Type{<:SomeType}) = true`. See [Implementing the interface without
+subtyping](@ref).
+"""
+isthick(::Type{T}) where T = T <: ThickNumber
+isthick(x) = isthick(typeof(x))
 
 # Functions that must be defined by subtypes
 
@@ -404,11 +424,18 @@ is_strict_supset_tn(a::ThickNumber, b::ThickNumber) = is_strict_subset_tn(b, a)
 const ⪾ = is_strict_supset_tn
 
 """
+    isempty_tn(x::ThickNumber)
+
+Return whether the span of `x` is empty (`hival(x) < loval(x)`).
+"""
+isempty_tn(x::ThickNumber) = hival(x) < loval(x)
+
+"""
     isempty(x::ThickNumber)
 
 Returns `true` if the span of `x` is empty (`hival(x) < loval(x)`), `false` otherwise.
 """
-Base.isempty(x::ThickNumber) = hival(x) < loval(x)
+Base.isempty(x::ThickNumber) = isempty_tn(x)
 
 function Base.isdisjoint(a::ThickNumber, b::ThickNumber)
     (isempty(a) || isempty(b)) && return true

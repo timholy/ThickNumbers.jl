@@ -28,6 +28,7 @@ function test_required(f::Function, @nospecialize(TN), @nospecialize(Ts=nothing)
     lo, hi = 1/3, nextfloat(2/3)
     x = f(TN, lo, hi)
     @test typeof(x) <: TN
+    @test isthick(TN)
     @test lo ∈ x
     @test hi ∈ x
     @test lo ≈ loval(x)
