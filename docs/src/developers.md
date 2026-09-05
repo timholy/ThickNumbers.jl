@@ -65,6 +65,6 @@ It must implement [`loval`](@ref), [`hival`](@ref), [`lohi`](@ref), [`basetype`]
 supported arithmetic, and any needed derived methods. These may include [`mid`](@ref),
 [`wid`](@ref), [`rad`](@ref), [`mag`](@ref), [`mig`](@ref), [`hull`](@ref),
 [`emptyset`](@ref), [`isempty_tn`](@ref), [`isnan_tn`](@ref), [`isinf_tn`](@ref),
-[`isfinite_tn`](@ref), and [`iszero_tn`](@ref).
+[`isfinite_tn`](@ref), and `iszero`.
 
 Use `isthick(x)` to recognize both kinds of implementation.
