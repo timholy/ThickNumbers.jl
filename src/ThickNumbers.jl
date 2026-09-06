@@ -22,7 +22,7 @@ export emptyset, hull, issubset_tn, ⫃, is_strict_subset_tn, ⪽, issupset_tn, 
 export isequal_tn, iseq_tn, ≐, isapprox_tn, ⩪, isless_tn, ≺, ≻, ⪯, ⪰
 
 # Unary
-export isfinite_tn, isinf_tn, isnan_tn
+export isfinite_tn, isinf_tn, isnan_tn, iszero_tn
 
 # Types
 
@@ -320,10 +320,17 @@ mig(x::ThickNumber{T}) where T = zero(T) ∈ x ? zero(T) : min(abs(loval(x)), ab
 mag(x::Real) = abs(x)
 mig(x::Real) = abs(x)
 
-# A thick number is zero exactly when it is the degenerate set `[0, 0]`. Unlike
-# `==`, this is unambiguous, so it is defined (and needed by ForwardDiff, which
-# tests partials for exact zero).
-Base.iszero(x::ThickNumber) = iszero(loval(x)) & iszero(hival(x))
+"""
+    iszero_tn(x)
+
+Return `true` if both endpoints of `x` are zero, `false` otherwise.
+For point numbers, equivalent to `iszero(x)`.
+"""
+iszero_tn(x::ThickNumber) = iszero(loval(x)) & iszero(hival(x))
+
+iszero_tn(x::Number) = iszero(x)
+
+Base.iszero(::ThickNumber) = throw(FPTNException(iszero, iszero_tn))
 
 Base.promote_rule(::Type{ThickNumber{T}}, ::Type{ThickNumber{S}}) where {T<:Number,S<:Number} = ThickNumber{promote_type(T,S)}
 

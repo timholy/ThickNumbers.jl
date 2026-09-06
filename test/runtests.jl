@@ -31,11 +31,13 @@ using MidRadArith
     @test mig(-3.0) === 3.0
     @test mag(2) === 2
     @test mig(2) === 2
-    # iszero: true only for the degenerate set [0, 0]
-    @test iszero(Interval(0, 0))
-    @test !iszero(Interval(0, 1))
-    @test !iszero(Interval(-1, 0))
-    @test !iszero(Interval(-1, 1))
+    # Only [0, 0] is the additive identity.
+    @test iszero_tn(Interval(0, 0))
+    @test !iszero_tn(Interval(0, 1))
+    @test !iszero_tn(Interval(-1, 0))
+    @test !iszero_tn(Interval(-1, 1))
+    @test iszero_tn(0.0) && !iszero_tn(1.0)
+    @test_throws FPTNException iszero(Interval(0, 0))
     @test lohi(Interval{Float64}, 1, 3) === x
     @test midrad(Interval{Float64}, 2, 1) === x
     @test basetype(Interval{Float64}) === Interval

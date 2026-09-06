@@ -45,10 +45,10 @@ ForwardDiff._div_partial(partial::Real, x::ThickNumber) = partial / x
 ForwardDiff._div_partial(partial::ThickNumber, x::Real) = partial / x
 ForwardDiff._div_partial(partial::ThickNumber, x::ThickNumber) = partial / x
 
-# ForwardDiff's `iszero_tuple` tests each partial with `==`, which ThickNumber
-# disables. Test exact-zeroness with `iszero` instead (defined for ThickNumber and,
-# recursively, for nested Duals over ThickNumbers).
-ForwardDiff.iszero_tuple(tup::NTuple{N,V}) where {N,V<:ThickLike} = all(iszero, tup)
+# ForwardDiff needs an unambiguous zero test for thick partials.
+ThickNumbers.iszero_tn(d::ThickDual) = iszero_tn(value(d)) & iszero_tn(partials(d))
+ThickNumbers.iszero_tn(p::Partials{N,V}) where {N,V<:ThickLike} = all(iszero_tn, p.values)
+ForwardDiff.iszero_tuple(tup::NTuple{N,V}) where {N,V<:ThickLike} = all(iszero_tn, tup)
 
 Base.promote_rule(::Type{TN}, ::Type{Dual{T,V,N}}) where {TN<:ThickNumber,T,V<:Number,N} = Dual{T, promote_dual(TN, V),N}
 
